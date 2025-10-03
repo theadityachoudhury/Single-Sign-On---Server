@@ -1,0 +1,17 @@
+{
+    "resolveFullPaths": true,
+    "verbose": false,
+    "replacers": {
+        "@/*": "./dist/*",
+        "@/config/*": "./dist/config/*",
+        "@/constants/*": "./dist/constants/*",
+        "@/controllers/*": "./dist/controllers/*",
+        "@/middlewares/*": "./dist/middlewares/*",
+        "@/models/*": "./dist/models/*",
+        "@/routes/*": "./dist/routes/*",
+        "@/services/*": "./dist/services/*",
+        "@/types/*": "./dist/types/*",
+        "@/utils/*": "./dist/utils/*",
+        "@/validators/*": "./dist/validators/*"
+    }
+}

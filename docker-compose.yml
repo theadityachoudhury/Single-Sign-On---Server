@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+    # Identity Service
+    identity-service:
+        build:
+            context: .
+            target: development
+        container_name: heapmind-identity
+        ports:
+            - '3000:3000'
+        environment:
+            - NODE_ENV=development
+            - MONGODB_URI=${MONGODB_URI}
+            - JWT_SECRET=${JWT_SECRET}
+            - PORT=3000
+        volumes:
+            - .:/app
+            - /app/node_modules
+            - ./logs:/app/logs
+        networks:
+            - heapmind-network
+        restart: unless-stopped
+
+networks:
+    heapmind-network:
+        driver: bridge
