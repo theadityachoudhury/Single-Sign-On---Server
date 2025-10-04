@@ -1,112 +1,80 @@
-import { MongoDBConnection } from '@/database/connections/mongodb.connections';
-import { Collection, Db, ObjectId } from 'mongodb';
+import { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { IBaseRepository, PaginatedResult, QueryOptions } from '../interfaces/base.repository.interface';
 
-// This is a base repository class for MongoDB that implements common CRUD operations.
-// It can be extended by other repositories to provide specific functionality.
-// It uses MongoDB's native driver to interact with the database and provides methods
+/**
+ * Base MongoDB repository implementing common CRUD operations using Mongoose.
+ * Uses lean queries by default for better performance.
+ * 
+ * @template T - The entity type (plain object)
+ * @template CreateDTO - DTO for creation operations
+ * @template UpdateDTO - DTO for update operations
+ */
+export abstract class BaseMongoRepository<
+    T,
+    CreateDTO = Partial<T>,
+    UpdateDTO = Partial<T>
+> implements IBaseRepository<T, CreateDTO, UpdateDTO> {
 
-export abstract class BaseMongoRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
-    implements IBaseRepository<T, CreateDTO, UpdateDTO> {
+    protected readonly model: Model<any>;
 
-    protected db: Db;
-    protected collection: Collection;
-
-    constructor(protected collectionName: string) {
-        this.db = MongoDBConnection.getInstance().getDatabase();
-        this.collection = this.db.collection(collectionName);
-    }
-
-    protected convertToObjectId(id: string): ObjectId {
-        try {
-            return new ObjectId(id);
-        } catch (error: unknown) {
-            if (error instanceof Error && error.message.includes('ObjectId')) {
-                // Handle invalid ObjectId format
-                console.error(`Invalid ObjectId format: ${id}`, error);
-            }
-            throw new Error(`Invalid ObjectId format: ${id}`);
-        }
-    }
-
-    protected createIdFilter(id: string): any {
-        if (ObjectId.isValid(id) && id.length === 24) {
-            return { _id: new ObjectId(id) };
-        }
-        return { _id: id };
+    constructor(model: Model<any>) {
+        this.model = model;
     }
 
     async findById(id: string): Promise<T | null> {
-        const filter = this.createIdFilter(id);
-        const doc = await this.collection.findOne(filter);
-        return doc ? this.mapFromMongo(doc) : null;
+        return this.model.findById(id).lean<T>().exec();
     }
 
-    async findMany(filter: Record<string, any> = {}, options: QueryOptions = {}): Promise<T[]> {
-        let cursor = this.collection.find(filter);
+    async findMany(filter: FilterQuery<any> = {}, options: QueryOptions = {}): Promise<T[]> {
+        const query = this.model.find(filter);
 
-        if (options.sort) cursor = cursor.sort(options.sort);
-        if (options.skip) cursor = cursor.skip(options.skip);
-        if (options.limit) cursor = cursor.limit(options.limit);
-        if (options.select) cursor = cursor.project(options.select);
+        if (options.sort) query.sort(options.sort);
+        if (options.skip !== undefined) query.skip(options.skip);
+        if (options.limit !== undefined) query.limit(options.limit);
+        if (options.select) query.select(options.select);
 
-        const docs = await cursor.toArray();
-        return docs.map(doc => this.mapFromMongo(doc));
+        return query.lean<T[]>().exec();
     }
 
     async create(data: CreateDTO): Promise<T> {
-        const docToInsert = this.mapToMongo(data);
-        const result = await this.collection.insertOne(docToInsert);
-
-        return this.mapFromMongo({
-            ...docToInsert,
-            _id: result.insertedId
-        });
+        const doc = await this.model.create(data);
+        return doc.toObject() as T;
     }
 
     async update(id: string, data: UpdateDTO): Promise<T | null> {
-        const filter = this.createIdFilter(id);
-        const updateDoc = this.mapToMongo(data);
-
-        const result = await this.collection.findOneAndUpdate(
-            filter,
-            { $set: { ...updateDoc, updatedAt: new Date() } },
-            { returnDocument: 'after' }
-        );
-
-        return result ? this.mapFromMongo(result) : null;
+        return this.model.findByIdAndUpdate(
+            id,
+            { $set: data } as UpdateQuery<any>,
+            { new: true, runValidators: true }
+        ).lean<T>().exec();
     }
 
     async delete(id: string): Promise<boolean> {
-        const filter = this.createIdFilter(id);
-        const result = await this.collection.deleteOne(filter);
-        return result.deletedCount > 0;
+        const result = await this.model.findByIdAndDelete(id).lean().exec();
+        return result !== null;
     }
 
-    async count(filter: Record<string, any> = {}): Promise<number> {
-        return await this.collection.countDocuments(filter);
+    async count(filter: FilterQuery<any> = {}): Promise<number> {
+        return this.model.countDocuments(filter).exec();
     }
 
     async exists(id: string): Promise<boolean> {
-        const filter = this.createIdFilter(id);
-        const doc = await this.collection.findOne(filter, { projection: { _id: 1 } });
-        return !!doc;
+        const result = await this.model.exists({ _id: id });
+        return result !== null;
     }
 
     protected async findWithPagination(
-        filter: Record<string, any> = {},
+        filter: FilterQuery<any> = {},
         page: number,
         limit: number,
         options: QueryOptions = {}
     ): Promise<PaginatedResult<T>> {
         const skip = (page - 1) * limit;
-        const total = await this.count(filter);
 
-        const data = await this.findMany(filter, {
-            ...options,
-            skip,
-            limit
-        });
+        const [data, total] = await Promise.all([
+            this.findMany(filter, { ...options, skip, limit }),
+            this.count(filter)
+        ]);
 
         return {
             data,
@@ -115,18 +83,5 @@ export abstract class BaseMongoRepository<T, CreateDTO = Partial<T>, UpdateDTO =
             limit,
             totalPages: Math.ceil(total / limit)
         };
-    }
-
-    // Abstract methods for mapping
-    protected abstract mapFromMongo(doc: any): T;
-    protected mapToMongo(data: any): any {
-        // Default implementation - override if needed
-        if (data && typeof data === 'object') {
-            if (data.id) {
-                delete data.id;
-            }
-
-            return data;
-        }
     }
 }

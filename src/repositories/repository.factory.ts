@@ -2,7 +2,6 @@ import { databaseConfig } from '@/config/database.config';
 import { container } from '../container/dependency-injection';
 import { IUserRepository } from './interfaces/user.repository.interface';
 import { UserMongoRepository } from './mongodb/user.mongo.repository';
-import { UserPostgresRepository } from './postgres/user.postgres.repository';
 
 export class RepositoryFactory {
     private static userRepository: IUserRepository;
@@ -12,9 +11,6 @@ export class RepositoryFactory {
             switch (databaseConfig.type) {
                 case 'mongodb':
                     this.userRepository = new UserMongoRepository();
-                    break;
-                case 'postgresql':
-                    this.userRepository = new UserPostgresRepository();
                     break;
                 default:
                     throw new Error(`Unsupported database type: ${databaseConfig.type}`);

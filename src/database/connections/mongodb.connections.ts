@@ -1,10 +1,8 @@
 import { DatabaseConfig } from '@/config/database.config';
-import { Db, MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 
 export class MongoDBConnection {
     private static instance: MongoDBConnection;
-    private client: MongoClient | null = null;
-    private db: Db | null = null;
 
     private constructor() { }
 
@@ -19,9 +17,10 @@ export class MongoDBConnection {
         if (!config) throw new Error('MongoDB config is required');
 
         try {
-            this.client = new MongoClient(config.uri, config.options);
-            await this.client.connect();
-            this.db = this.client.db(config.dbName);
+            await mongoose.connect(config.uri, {
+                dbName: config.dbName,
+                ...config.options
+            });
             console.log('✅ MongoDB connected successfully');
         } catch (error) {
             console.error('❌ MongoDB connection failed:', error);
@@ -30,26 +29,20 @@ export class MongoDBConnection {
     }
 
     async disconnect(): Promise<void> {
-        if (this.client) {
-            await this.client.close();
-            this.client = null;
-            this.db = null;
-            console.log('✅ MongoDB disconnected');
-        }
+        await mongoose.disconnect();
+        console.log('✅ MongoDB disconnected');
     }
 
-    getDatabase(): Db {
-        if (!this.db) {
+    getConnection(): typeof mongoose {
+        if (mongoose.connection.readyState === 0) {
             throw new Error('MongoDB not connected. Call connect() first.');
         }
-        return this.db;
+        return mongoose;
     }
 
     async healthCheck(): Promise<boolean> {
         try {
-            if (!this.db) return false;
-            await this.db.admin().ping();
-            return true;
+            return mongoose.connection.readyState === 1;
         } catch {
             return false;
         }

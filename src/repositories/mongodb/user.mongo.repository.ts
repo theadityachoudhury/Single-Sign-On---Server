@@ -1,5 +1,7 @@
+import { UserModel, UserProfileModel } from '@/models/user.model';
 import { CreateUserDTO, UpdateUserDTO } from '@/types/dtos/user.dto';
 import { User, UserProfile, UserStatus } from '@/types/entities/user.entity';
+import { FilterQuery } from 'mongoose';
 import { PaginatedResult, QueryOptions } from '../interfaces/base.repository.interface';
 import { IUserRepository } from '../interfaces/user.repository.interface';
 import { BaseMongoRepository } from './base.mongo.repository';
@@ -7,99 +9,52 @@ import { BaseMongoRepository } from './base.mongo.repository';
 export class UserMongoRepository extends BaseMongoRepository<User, CreateUserDTO, UpdateUserDTO>
     implements IUserRepository {
 
-    private profileCollection = this.db.collection('user_profiles');
-
     constructor() {
-        super('users');
-    }
-
-    protected mapFromMongo(doc: any): User {
-        return {
-            id: doc._id.toString(),
-            email: doc.email,
-            name: doc.name,
-            password: doc.password,
-            status: doc.status,
-            role: doc.role,
-            profileId: doc.profileId,
-            createdAt: doc.createdAt,
-            updatedAt: doc.updatedAt,
-            lastLoginAt: doc.lastLoginAt
-        };
-    }
-
-    protected mapToMongo(data: any): any {
-        if (data && typeof data === 'object') {
-            if (data.id) {
-                delete data.id; // Remove id field if present
-            }
-            // Ensure createdAt and updatedAt are set
-            data.createdAt = data.createdAt || new Date();
-            data.updatedAt = new Date(); // Always update updatedAt to current time
-        }
-
-        return {
-            ...data,
-            createdAt: data.createdAt || new Date(),
-            updatedAt: new Date()
-        };
+        super(UserModel);
     }
 
     async findByEmail(email: string): Promise<User | null> {
-        const doc = await this.collection.findOne({ email: email.toLowerCase() });
-        return doc ? this.mapFromMongo(doc) : null;
+        return this.model.findOne({ email: email.toLowerCase() })
+            .lean<User>()
+            .exec();
     }
 
     async findActiveUsers(options: QueryOptions = {}): Promise<User[]> {
-        return await this.findMany({ status: UserStatus.ACTIVE }, options);
+        return this.findMany({ status: UserStatus.ACTIVE }, options);
     }
 
     async findUsersByRole(role: string): Promise<User[]> {
-        return await this.findMany({ role });
+        return this.findMany({ role });
     }
 
     async findUsersWithPagination(
         page: number,
         limit: number,
-        filter: Record<string, any> = {}
+        filter: FilterQuery<any> = {}
     ): Promise<PaginatedResult<User>> {
-        return await this.findWithPagination(filter, page, limit);
+        return this.findWithPagination(filter, page, limit);
     }
 
-    async createProfile(profileData: any): Promise<UserProfile> {
-        const docToInsert = {
-            ...profileData,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        const result = await this.profileCollection.insertOne(docToInsert);
-
-        return {
-            id: result.insertedId.toString(),
-            ...profileData,
-            createdAt: docToInsert.createdAt,
-            updatedAt: docToInsert.updatedAt
-        } as UserProfile;
+    async createProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {
+        const doc = await UserProfileModel.create(profileData);
+        return doc.toObject() as UserProfile;
     }
 
     async findProfileByUserId(userId: string): Promise<UserProfile | null> {
-        const doc = await this.profileCollection.findOne({ userId });
-        return doc ? this.mapProfileFromMongo(doc) : null;
+        return UserProfileModel.findOne({ userId })
+            .lean<UserProfile>()
+            .exec();
     }
 
-    async updateProfile(userId: string, profileData: any): Promise<UserProfile | null> {
-        const result = await this.profileCollection.findOneAndUpdate(
+    async updateProfile(userId: string, profileData: Partial<UserProfile>): Promise<UserProfile | null> {
+        return UserProfileModel.findOneAndUpdate(
             { userId },
-            { $set: { ...profileData, updatedAt: new Date() } },
-            { returnDocument: 'after' }
-        );
-
-        return result ? this.mapProfileFromMongo(result) : null;
+            { $set: profileData },
+            { new: true, runValidators: true }
+        ).lean<UserProfile>().exec();
     }
 
     async findUsersByLocation(lat: number, lng: number, radiusKm: number): Promise<User[]> {
-        // MongoDB geospatial query
         const pipeline = [
             {
                 $lookup: {
@@ -121,14 +76,13 @@ export class UserMongoRepository extends BaseMongoRepository<User, CreateUserDTO
             }
         ];
 
-        const docs = await this.collection.aggregate(pipeline).toArray();
-        return docs.map(doc => this.mapFromMongo(doc));
+        return this.model.aggregate<User>(pipeline).exec();
     }
 
-    async findRecentActiveUsers(days: number, limit: number = 100): Promise<User[]> {
+    async findRecentActiveUsers(days: number, limit = 100): Promise<User[]> {
         const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-        return await this.findMany(
+        return this.findMany(
             {
                 lastLoginAt: { $gte: cutoffDate },
                 status: UserStatus.ACTIVE
@@ -146,16 +100,14 @@ export class UserMongoRepository extends BaseMongoRepository<User, CreateUserDTO
         inactive: number;
         vip: number;
     }> {
-        const pipeline = [
+        const results = await this.model.aggregate<{ _id: UserStatus; count: number }>([
             {
                 $group: {
                     _id: '$status',
                     count: { $sum: 1 }
                 }
             }
-        ];
-
-        const results = await this.collection.aggregate(pipeline).toArray();
+        ]).exec();
 
         const stats = {
             total: 0,
@@ -164,7 +116,7 @@ export class UserMongoRepository extends BaseMongoRepository<User, CreateUserDTO
             vip: 0
         };
 
-        results.forEach(result => {
+        results.forEach((result) => {
             stats.total += result.count;
             switch (result._id) {
                 case UserStatus.ACTIVE:
@@ -180,19 +132,5 @@ export class UserMongoRepository extends BaseMongoRepository<User, CreateUserDTO
         });
 
         return stats;
-    }
-
-    private mapProfileFromMongo(doc: any): UserProfile {
-        return {
-            id: doc._id.toString(),
-            userId: doc.userId,
-            firstName: doc.firstName,
-            lastName: doc.lastName,
-            avatar: doc.avatar,
-            bio: doc.bio,
-            phone: doc.phone,
-            address: doc.address,
-            preferences: doc.preferences
-        };
     }
 }
