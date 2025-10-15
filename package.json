@@ -5,9 +5,9 @@
     "main": "dist/server.js",
     "type": "module",
     "scripts": {
-        "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-        "build": "tsc -p tsconfig.json",
-        "start": "node dist/main.js",
+        "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+        "build": "tsc && tsc-alias",
+        "start": "node dist/server.js",
         "lint": "eslint . --ext .ts",
         "format": "prettier --write .",
         "clean": "rimraf dist"
@@ -33,6 +33,7 @@
         "prettier": "^3.6.2",
         "rimraf": "^6.0.1",
         "ts-node-dev": "^2.0.0",
+        "tsc-alias": "^1.8.16",
         "typescript": "^5.9.3"
     },
     "dependencies": {
@@ -44,6 +45,7 @@
         "express": "^5.1.0",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.2",
+        "mongoose": "^8.19.1",
         "uuid": "^13.0.0",
         "winston": "^3.18.3",
         "zod": "^4.1.12"

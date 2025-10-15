@@ -25,9 +25,9 @@ const envSchema = z.object({
         .default(['http://localhost:5173']),
 
     // Database
-    DATABASE_URL: z.string().optional(),
-    MONGO_URI: z.string().optional(),
-    REDIS_URL: z.string().optional(),
+    AUTH_DB_MONGO_URI: z.string(),
+    OAUTH_DB_MONGO_URI: z.string(),
+    IDENTITY_DB_MONGO_URI: z.string(),
 
     // Mail
     SMTP_HOST: z.string().optional(),

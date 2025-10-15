@@ -1,0 +1,10 @@
+{
+    "resolveFullPaths": true,
+    "verbose": false,
+    "replacers": {
+        "@/*": "./dist/*",
+        "@/Config/*": "./dist/core/Config/*",
+        "@/Logger/*": "./dist/core/Logger/*",
+        "@/apps/*": "./dist/apps/*"
+    }
+}

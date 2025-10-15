@@ -3,8 +3,12 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import corsOptions from '@/Config/corsOptions.js';
+import initializeDatabase from './core/DB/index.js';
 
 const app = express();
+
+// Database initialization before going further as other middlewares might depend on DB
+await initializeDatabase();
 
 app.use(helmet());
 app.use(requestLogger);
