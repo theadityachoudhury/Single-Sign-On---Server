@@ -1,5 +1,5 @@
 import { config } from '@/Config/index.js';
-import mongoose from 'mongoose';
+import mongoose, { MongooseError } from 'mongoose';
 
 interface DBConnections {
     authDB: mongoose.Connection;
@@ -17,7 +17,7 @@ export const db: DBConnections = {
 const initializeDatabase = async () => {
     try {
         await Promise.all([
-            db.authDB.asPromise(),
+            await db.authDB.asPromise(),
             db.identityDB.asPromise(),
             db.oAuthDB.asPromise(),
         ]);
@@ -27,5 +27,19 @@ const initializeDatabase = async () => {
         process.exit(1);
     }
 };
+
+for (const [name, connection] of Object.entries(db)) {
+    connection.on('connected', () => {
+        console.log(`✅ ${name} connected`);
+    });
+
+    connection.on('error', (err: MongooseError) => {
+        console.error(`❌ ${name} connection error:`, err);
+    });
+
+    connection.on('disconnected', () => {
+        console.warn(`⚠️ ${name} disconnected`);
+    });
+}
 
 export default initializeDatabase;
