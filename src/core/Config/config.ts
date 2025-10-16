@@ -23,6 +23,7 @@ const envSchema = z.object({
         .string()
         .transform(val => stringToArray(val))
         .default(['http://localhost:5173']),
+    BACKEND_URL: z.string().default('http://localhost'),
 
     // Database
     AUTH_DB_MONGO_URI: z.string(),
