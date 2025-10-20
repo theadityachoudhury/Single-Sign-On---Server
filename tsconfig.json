@@ -16,7 +16,7 @@
             "@/Config/*": ["core/Config/*"],
             "@/types/OAuth/*": ["apps/oauth/types/*"],
             "@/*": ["*"],
-            "@/utils/*":["Utils/*"]
+            "@/utils/*": ["Utils/*"]
         },
         "declaration": true,
         "declarationMap": true,
