@@ -1,27 +1,13 @@
 import { db } from '@/core/DB/index.js';
 import { Schema } from 'mongoose';
 import { v4 } from 'uuid';
-
-enum clientType {
-    CONFIDENTIAL = 'confidential',
-    PUBLIC = 'public',
-}
-
-enum applicationType {
-    WEB = 'web',
-    NATIVE = 'native',
-    SPA = 'spa',
-}
+import { ClientType, ApplicationType } from '@/types/OAuth/OAuthClients.type.js';
 
 const OAuthClientsSchema: Schema = new Schema(
     {
         _id: {
-            type: Buffer,
-            default: () => v4(),
-            get: (v: Buffer) => {
-                const match = v.toString('hex').match(/(.{8})(.{4})(.{4})(.{4})(.{12})/);
-                return match ? match.slice(1).join('-') : '';
-            },
+            type: String,
+            default: v4,
         },
         clientName: {
             type: String,
@@ -37,14 +23,14 @@ const OAuthClientsSchema: Schema = new Schema(
         },
         clientType: {
             type: String,
-            enum: clientType,
-            default: clientType.PUBLIC,
+            enum: ClientType,
+            default: ClientType.PUBLIC,
             required: true,
         },
         applicationType: {
             type: String,
-            enum: applicationType,
-            default: applicationType.WEB,
+            enum: ApplicationType,
+            default: ApplicationType.WEB,
             required: true,
         },
         clientURI: {
@@ -67,15 +53,15 @@ const OAuthClientsSchema: Schema = new Schema(
             type: Boolean,
             default: true,
         },
-        access_token_lifetime: {
+        accessTokenLifetime: {
             type: Number,
             default: 3600, // 1 hour in seconds
         },
-        refresh_token_lifetime: {
+        refreshTokenLifetime: {
             type: Number,
             default: 1209600, // 14 days in seconds
         },
-        id_token_lifetime: {
+        idTokenLifetime: {
             type: Number,
             default: 120, // 2 minutes in seconds
         },
@@ -92,11 +78,19 @@ OAuthClientsSchema.set('toJSON', {
     versionKey: false,
     transform: function (_, ret) {
         delete ret._id;
+        delete ret.id;
     },
 });
 
-OAuthClientsSchema.set('toObject', { virtuals: true });
+OAuthClientsSchema.set('toObject', {
+    virtuals: true,
+    versionKey: false,
+    transform: function (_, ret) {
+        delete ret._id;
+        delete ret.id;
+    },
+});
 
-OAuthClientsSchema.index({ is_active: 1 });
+OAuthClientsSchema.index({ isActive: 1 });
 
 export const OAuthClientsModel = db.oAuthDB.model('OAuthClients', OAuthClientsSchema);

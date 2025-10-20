@@ -204,7 +204,7 @@ export const errorHandler = (
             };
         } else {
             statusCode = 500;
-            message = 'Database Error';
+            message = 'Internal Server Error';
         }
     }
     // Handle JWT errors

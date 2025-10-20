@@ -14,7 +14,9 @@
             "@/Logger/*": ["core/Logger/*"],
             "@/apps/*": ["apps/*"],
             "@/Config/*": ["core/Config/*"],
-            "@/*": ["*"]
+            "@/types/OAuth/*": ["apps/oauth/types/*"],
+            "@/*": ["*"],
+            "@/utils/*":["Utils/*"]
         },
         "declaration": true,
         "declarationMap": true,

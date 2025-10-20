@@ -5,6 +5,8 @@
         "@/*": "./dist/*",
         "@/Config/*": "./dist/core/Config/*",
         "@/Logger/*": "./dist/core/Logger/*",
-        "@/apps/*": "./dist/apps/*"
+        "@/types/OAuth/*": "./dist/apps/oauth/types/*",
+        "@/apps/*": "./dist/apps/*",
+        "@/Utils/*": "./dist/Utils/*"
     }
 }

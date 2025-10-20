@@ -14,7 +14,9 @@ process.on('uncaughtException', (err: Error) => {
 const server = app.listen(config.PORT, () => {
     logger.info(`🚀 Server running on port ${config.PORT} in ${config.NODE_ENV} mode`);
     logger.info(`📊 Process ID: ${process.pid}`);
-    logger.info(`🔗 Health check: ${config.BACKEND_URL}:${config.PORT}/api/health`);
+    logger.info(
+        `🔗 Health check: ${config.BACKEND_URL}:${config.PORT}/${config.API_PREFIX}/health`
+    );
 });
 
 // Handle unhandled promise rejections
