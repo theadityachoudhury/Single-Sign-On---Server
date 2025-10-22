@@ -1,20 +1,11 @@
 import { db } from '@/core/DB/index.js';
 import { Schema } from 'mongoose';
-
-enum clientGrantType {
-    AUTHORIZATION_CODE = 'authorization',
-    IMPLICIT = 'implicit',
-    PASSWORD = 'password',
-    CLIENT_CREDENTIALS = 'client_credentials',
-    REFRESH_TOKEN = 'refresh_token',
-    DEVICE_CODE = 'urn:ietf:params:oauth:grant-type:device_code',
-    JWT_BEARER = 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-}
+import { clientGrantType } from '@/types/OAuth/ClientGrants.type.js';
 
 const ClientGrantTypes: Schema = new Schema(
     {
         clientId: {
-            type: Buffer,
+            type: String,
             required: true,
             ref: 'OAuthClients',
         },
@@ -26,5 +17,14 @@ const ClientGrantTypes: Schema = new Schema(
     },
     { timestamps: true }
 );
+
+ClientGrantTypes.index({ clientId: 1, grantType: 1 }, { unique: true });
+ClientGrantTypes.set('toObject', {
+    versionKey: false,
+    transform: function (doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+    },
+});
 
 export const ClientGrantTypesModel = db.oAuthDB.model('ClientGrantTypes', ClientGrantTypes);

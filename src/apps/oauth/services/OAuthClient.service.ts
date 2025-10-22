@@ -1,6 +1,6 @@
 import OAuthClientRepository from '@/apps/oauth/repositories/OAuthClient.repository.js';
 import { ClientSession } from 'mongoose';
-import { CreateOAuthClientDTO, IOAuthClient } from '@/types/OAuth/OAuthClients.type.js';
+import { ClientType, CreateOAuthClientDTO, IOAuthClient } from '@/types/OAuth/OAuthClients.type.js';
 import {
     errorResponse,
     FunctionResponseType,
@@ -9,14 +9,27 @@ import {
 import ClientSecretsRepository from '@/apps/oauth/repositories/ClientSecrets.repository.js';
 import { CreateClientSecretDTO } from '@/types/OAuth/ClientSecrets.type.js';
 import SecretUtils from '@/Utils/Secret.js';
+import { clientGrantType } from '@/types/OAuth/ClientGrants.type.js';
+import ClientGrantsRepository from '@/apps/oauth/repositories/ClientGrants.repository.js';
 
 export default class OAuthClientService {
     private oauthClientRepository: OAuthClientRepository;
     private ClientSecretsRepository: ClientSecretsRepository;
+    private ClientGrantsRepository: ClientGrantsRepository;
+
+    private readonly DEFAULT_GRANTS = {
+        [ClientType.CONFIDENTIAL]: [
+            clientGrantType.AUTHORIZATION_CODE,
+            clientGrantType.REFRESH_TOKEN,
+            clientGrantType.CLIENT_CREDENTIALS,
+        ],
+        [ClientType.PUBLIC]: [clientGrantType.AUTHORIZATION_CODE, clientGrantType.REFRESH_TOKEN],
+    };
 
     constructor() {
         this.oauthClientRepository = new OAuthClientRepository();
         this.ClientSecretsRepository = new ClientSecretsRepository();
+        this.ClientGrantsRepository = new ClientGrantsRepository();
     }
 
     async createClient(
@@ -61,6 +74,22 @@ export default class OAuthClientService {
             if (secretResult.error) {
                 // If secret creation fails, the transaction will rollback (if using transactions)
                 return errorResponse(secretResult.errorDetails, 'Failed to create client secret');
+            }
+
+            const grantsToAssign = this.DEFAULT_GRANTS[data.clientType] || [];
+            // 3. Assign Default Grant Types
+            for (const grantType of grantsToAssign) {
+                const grant = await this.ClientGrantsRepository.assignGrantToClient(
+                    {
+                        clientId: clientResult.data!.clientId,
+                        grantType,
+                    },
+                    session
+                );
+
+                if (grant.error) {
+                    return errorResponse(grant.errorDetails, 'Failed to assign client grant');
+                }
             }
 
             // Return client with plain secret (only visible once)
