@@ -11,12 +11,16 @@ import { CreateClientSecretDTO } from '@/types/OAuth/ClientSecrets.type.js';
 import SecretUtils from '@/Utils/Secret.js';
 import { clientGrantType } from '@/types/OAuth/ClientGrants.type.js';
 import ClientGrantsRepository from '@/apps/oauth/repositories/ClientGrants.repository.js';
+import ClientResponseTypesRepository from '@/apps/oauth/repositories/ClientResponseTypes.repository.js';
+import { responseType } from '@/apps/oauth/types/ClientResponse.type.js';
 
 export default class OAuthClientService {
     private oauthClientRepository: OAuthClientRepository;
     private ClientSecretsRepository: ClientSecretsRepository;
     private ClientGrantsRepository: ClientGrantsRepository;
+    private ClientResponseTypesRepository: ClientResponseTypesRepository;
 
+    // Default grant types based on OAuth 2.0 best practices
     private readonly DEFAULT_GRANTS = {
         [ClientType.CONFIDENTIAL]: [
             clientGrantType.AUTHORIZATION_CODE,
@@ -26,10 +30,22 @@ export default class OAuthClientService {
         [ClientType.PUBLIC]: [clientGrantType.AUTHORIZATION_CODE, clientGrantType.REFRESH_TOKEN],
     };
 
+    // Default response types based on security best practices
+    private readonly DEFAULT_RESPONSE_TYPES = {
+        [ClientType.CONFIDENTIAL]: [
+            responseType.CODE, // Authorization code flow (most secure)
+            responseType.CODE_ID_TOKEN, // Hybrid flow (auth + immediate ID)
+        ],
+        [ClientType.PUBLIC]: [
+            responseType.CODE, // Authorization code with PKCE
+        ],
+    };
+
     constructor() {
         this.oauthClientRepository = new OAuthClientRepository();
         this.ClientSecretsRepository = new ClientSecretsRepository();
         this.ClientGrantsRepository = new ClientGrantsRepository();
+        this.ClientResponseTypesRepository = new ClientResponseTypesRepository();
     }
 
     async createClient(
@@ -89,6 +105,26 @@ export default class OAuthClientService {
 
                 if (grant.error) {
                     return errorResponse(grant.errorDetails, 'Failed to assign client grant');
+                }
+            }
+
+            const responseTypesToAssign = this.DEFAULT_RESPONSE_TYPES[data.clientType] || [];
+            // 4. Assign Default Response Types
+            for (const respType of responseTypesToAssign) {
+                const responseTypeResult =
+                    await this.ClientResponseTypesRepository.assignResponseTypeToClient(
+                        {
+                            clientId: clientResult.data!.clientId,
+                            responseType: respType,
+                        },
+                        session
+                    );
+
+                if (responseTypeResult.error) {
+                    return errorResponse(
+                        responseTypeResult.errorDetails,
+                        'Failed to assign response type'
+                    );
                 }
             }
 

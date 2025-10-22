@@ -1,20 +1,11 @@
 import { db } from '@/core/DB/index.js';
 import { Schema } from 'mongoose';
-
-enum responseType {
-    CODE = 'code',
-    TOKEN = 'token',
-    ID_TOKEN = 'id_token',
-    CODE_TOKEN = 'code token',
-    CODE_ID_TOKEN = 'code id_token',
-    TOKEN_ID_TOKEN = 'token id_token',
-    CODE_TOKEN_ID_TOKEN = 'code token id_token',
-}
+import { responseType } from '@/types/OAuth/ClientResponse.type.js';
 
 const ClientResponseTypes: Schema = new Schema(
     {
         clientId: {
-            type: Buffer,
+            type: String,
             required: true,
             ref: 'OAuthClients',
         },
@@ -26,6 +17,15 @@ const ClientResponseTypes: Schema = new Schema(
     },
     { timestamps: true }
 );
+
+ClientResponseTypes.index({ clientId: 1, responseType: 1 }, { unique: true });
+ClientResponseTypes.set('toObject', {
+    versionKey: false,
+    transform: function (_, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+    },
+});
 
 export const ClientResponseTypesModel = db.oAuthDB.model(
     'ClientResponseTypes',
