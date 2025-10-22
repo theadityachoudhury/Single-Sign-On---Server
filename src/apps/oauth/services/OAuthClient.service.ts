@@ -73,25 +73,29 @@ export default class OAuthClientService {
                 >;
             }
 
-            // 2. Create Client Secret record (within same transaction)
-            const secretData: CreateClientSecretDTO = {
-                clientId: clientResult.data!.clientId,
-                secretHash: clientSecretHash,
-                secretHint: secretHint,
-                description: 'Initial client secret (Default Created)',
-                isActive: true,
-            };
+            if (clientResult.data?.clientType === ClientType.PUBLIC) {
+                // 2. Create Client Secret record (within same transaction)
+                const secretData: CreateClientSecretDTO = {
+                    clientId: clientResult.data!.clientId,
+                    secretHash: clientSecretHash,
+                    secretHint: secretHint,
+                    description: 'Initial client secret (Default Created)',
+                    isActive: true,
+                };
 
-            const secretResult = await this.ClientSecretsRepository.createClientSecret(
-                secretData,
-                session
-            );
+                const secretResult = await this.ClientSecretsRepository.createClientSecret(
+                    secretData,
+                    session
+                );
 
-            if (secretResult.error) {
-                // If secret creation fails, the transaction will rollback (if using transactions)
-                return errorResponse(secretResult.errorDetails, 'Failed to create client secret');
+                if (secretResult.error) {
+                    // If secret creation fails, the transaction will rollback (if using transactions)
+                    return errorResponse(
+                        secretResult.errorDetails,
+                        'Failed to create client secret'
+                    );
+                }
             }
-
             const grantsToAssign = this.DEFAULT_GRANTS[data.clientType] || [];
             // 3. Assign Default Grant Types
             for (const grantType of grantsToAssign) {
