@@ -6,6 +6,7 @@ import {
     FunctionResponseType,
     successResponse,
 } from '@/core/Types/Response.type.js';
+import MongooseUtils from '@/Utils/Mongoose.js';
 
 export default class OAuthClientRepository {
     async createClient(
@@ -23,7 +24,7 @@ export default class OAuthClientRepository {
 
             await client.save();
             return successResponse<IOAuthClient>(
-                client.toObject() as unknown as IOAuthClient,
+                MongooseUtils.toPlainObject<IOAuthClient>(client),
                 'OAuth client created successfully'
             );
         } catch (error) {

@@ -7,6 +7,7 @@ import { logger } from '@/Logger/index.js';
 import { ClientSession } from 'mongoose';
 import ClientSecretModel from '@/apps/oauth/models/ClientSecretsModel.js';
 import { CreateClientSecretDTO, IClientSecret } from '@/types/OAuth/ClientSecrets.type.js';
+import MongooseUtils from '@/Utils/Mongoose.js';
 
 export default class ClientSecretsRepository {
     async createClientSecret(
@@ -30,7 +31,7 @@ export default class ClientSecretsRepository {
             await clientSecret.save();
 
             return successResponse<IClientSecret>(
-                clientSecret.toObject() as unknown as IClientSecret,
+                MongooseUtils.toPlainObject<IClientSecret>(clientSecret),
                 'OAuth client Secrets created successfully'
             );
         } catch (error) {
@@ -74,7 +75,7 @@ export default class ClientSecretsRepository {
             }
 
             return successResponse<IClientSecret[] | null>(
-                clientSecret.map(a => a.toObject()) as unknown as IClientSecret[],
+                MongooseUtils.toPlainObjectArray<IClientSecret>(clientSecret),
                 'Active client secret retrieved successfully'
             );
         } catch (error) {
@@ -105,7 +106,7 @@ export default class ClientSecretsRepository {
             }
 
             return successResponse<IClientSecret | null>(
-                clientSecret.toObject() as unknown as IClientSecret,
+                MongooseUtils.toPlainObject<IClientSecret>(clientSecret),
                 'Client secret verified successfully'
             );
         } catch (error) {
