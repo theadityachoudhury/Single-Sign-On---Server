@@ -4,11 +4,11 @@ import { Schema } from 'mongoose';
 const UserConsentSchema: Schema = new Schema(
     {
         user_id: {
-            type: Buffer,
+            type: String,
             required: true,
         },
         client_id: {
-            type: Buffer,
+            type: String,
             required: true,
             ref: 'OAuthClient',
         },

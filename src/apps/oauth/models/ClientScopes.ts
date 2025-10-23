@@ -4,7 +4,7 @@ import { Schema } from 'mongoose';
 const ClientScopesSchema: Schema = new Schema(
     {
         clientId: {
-            type: Buffer,
+            type: String,
             required: true,
             ref: 'OAuthClients',
         },

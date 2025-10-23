@@ -5,7 +5,7 @@ import {
 } from '@/core/Types/Response.type.js';
 import { logger } from '@/Logger/index.js';
 import { ClientSession } from 'mongoose';
-import ClientSecretModel from '@/apps/oauth/models/ClientSecretsModel.js';
+import ClientSecretModel from '@/apps/oauth/models/ClientSecrets.js';
 import { CreateClientSecretDTO, IClientSecret } from '@/types/OAuth/ClientSecrets.type.js';
 import MongooseUtils from '@/Utils/Mongoose.js';
 

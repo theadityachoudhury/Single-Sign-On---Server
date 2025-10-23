@@ -9,7 +9,7 @@ enum uriType {
 const ClientRedirectURIsSchema: Schema = new Schema(
     {
         clientId: {
-            type: Buffer,
+            type: String,
             required: true,
             ref: 'OAuthClients',
         },

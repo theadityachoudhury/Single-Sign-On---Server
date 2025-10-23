@@ -14,7 +14,7 @@ const AuthorizationCodeSchema: Schema = new Schema(
             ref: 'OAuthClients',
         },
         userId: {
-            type: Buffer,
+            type: String,
             required: true,
         },
         redirectURI: {
@@ -22,7 +22,7 @@ const AuthorizationCodeSchema: Schema = new Schema(
             required: true,
         },
         scope: {
-            type: Buffer,
+            type: String,
             required: true,
             ref: 'OAuthScopes',
         },
