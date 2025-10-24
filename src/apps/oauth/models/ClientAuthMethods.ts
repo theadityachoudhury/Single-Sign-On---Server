@@ -1,13 +1,6 @@
 import { db } from '@/core/DB/index.js';
 import { Schema } from 'mongoose';
-
-enum ClientAuthMethods {
-    CLIENT_SECRET_BASIC = 'client_secret_basic',
-    CLIENT_SECRET_POST = 'client_secret_post',
-    CLIENT_SECRET_JWT = 'client_secret_jwt',
-    PRIVATE_KEY_JWT = 'private_key_jwt',
-    NONE = 'none',
-}
+import { ClientAuthMethods } from '@/types/OAuth/ClientAuthMethods.type.js';
 
 const ClientAuthMethodsSchema: Schema = new Schema(
     {

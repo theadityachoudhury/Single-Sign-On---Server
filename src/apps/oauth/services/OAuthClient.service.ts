@@ -13,12 +13,15 @@ import { clientGrantType } from '@/types/OAuth/ClientGrants.type.js';
 import ClientGrantsRepository from '@/apps/oauth/repositories/ClientGrants.repository.js';
 import ClientResponseTypesRepository from '@/apps/oauth/repositories/ClientResponseTypes.repository.js';
 import { responseType } from '@/apps/oauth/types/ClientResponse.type.js';
+import ClientAuthMethodsRepository from '@/apps/oauth/repositories/ClientAuthMethods.repository.js';
+import { ClientAuthMethods } from '@/types/OAuth/ClientAuthMethods.type.js';
 
 export default class OAuthClientService {
     private oauthClientRepository: OAuthClientRepository;
     private ClientSecretsRepository: ClientSecretsRepository;
     private ClientGrantsRepository: ClientGrantsRepository;
     private ClientResponseTypesRepository: ClientResponseTypesRepository;
+    private ClientAuthMethodsRepository: ClientAuthMethodsRepository;
 
     // Default grant types based on OAuth 2.0 best practices
     private readonly DEFAULT_GRANTS = {
@@ -41,11 +44,24 @@ export default class OAuthClientService {
         ],
     };
 
+    // Default authentication methods based on client type
+    private readonly DEFAULT_AUTH_METHODS = {
+        [ClientType.CONFIDENTIAL]: [
+            ClientAuthMethods.CLIENT_SECRET_BASIC, // Primary: HTTP Basic Auth
+            ClientAuthMethods.CLIENT_SECRET_POST, // Fallback: POST body
+            ClientAuthMethods.PRIVATE_KEY_JWT, // Enterprise: Asymmetric keys
+        ],
+        [ClientType.PUBLIC]: [
+            ClientAuthMethods.NONE, // Public clients cannot authenticate (use PKCE)
+        ],
+    };
+
     constructor() {
         this.oauthClientRepository = new OAuthClientRepository();
         this.ClientSecretsRepository = new ClientSecretsRepository();
         this.ClientGrantsRepository = new ClientGrantsRepository();
         this.ClientResponseTypesRepository = new ClientResponseTypesRepository();
+        this.ClientAuthMethodsRepository = new ClientAuthMethodsRepository();
     }
 
     async createClient(
@@ -128,6 +144,26 @@ export default class OAuthClientService {
                     return errorResponse(
                         responseTypeResult.errorDetails,
                         'Failed to assign response type'
+                    );
+                }
+            }
+
+            const authMethodsToAssign = this.DEFAULT_AUTH_METHODS[data.clientType] || [];
+            // 5. Assign Default Authentication Methods
+            for (const authMethod of authMethodsToAssign) {
+                const authMethodResult =
+                    await this.ClientAuthMethodsRepository.assignAuthMethodToClient(
+                        {
+                            clientId: clientResult.data!.clientId,
+                            authMethod,
+                        },
+                        session
+                    );
+
+                if (authMethodResult.error) {
+                    return errorResponse(
+                        authMethodResult.errorDetails,
+                        'Failed to assign authentication method'
                     );
                 }
             }
