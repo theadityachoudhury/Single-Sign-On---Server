@@ -22,10 +22,10 @@ describe('Feature Name', () => {
         it('should behave as expected', () => {
             // Arrange
             const input = 'test';
-            
+
             // Act
             const result = someFunction(input);
-            
+
             // Assert
             expect(result).toBe('expected output');
         });
@@ -64,7 +64,7 @@ it('should throw ValidationError', async () => {
 it('should resolve with data', async () => {
     await expect(asyncFunction('valid')).resolves.toEqual({
         success: true,
-        data: expect.any(Object)
+        data: expect.any(Object),
     });
 });
 ```
@@ -90,7 +90,7 @@ it('should handle errors gracefully', async () => {
 ```typescript
 it('should return error response', async () => {
     const result = await service.create(invalidData);
-    
+
     expect(result.error).toBe(true);
     expect(result.message).toBeDefined();
     expect(result.data).toBeUndefined();
@@ -113,10 +113,10 @@ describe('Database Operations', () => {
     it('should save data to database', async () => {
         const data = { name: 'test' };
         const result = await repository.save(data);
-        
+
         expect(result).toBeDefined();
         expect(result.id).toBeDefined();
-        
+
         // Verify in database
         const saved = await repository.findById(result.id);
         expect(saved.name).toBe('test');
@@ -129,9 +129,9 @@ describe('Database Operations', () => {
 ```typescript
 it('should enforce unique constraints', async () => {
     const data = { email: 'test@example.com' };
-    
+
     await repository.create(data);
-    
+
     // Trying to create duplicate should fail
     await expect(repository.create(data)).rejects.toThrow();
 });
@@ -150,7 +150,7 @@ describe('GET /api/endpoint', () => {
 
     it('should return data', async () => {
         const response = await apiClient.get('/api/endpoint');
-        
+
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
         expect(response.body.data).toBeDefined();
@@ -164,11 +164,11 @@ describe('GET /api/endpoint', () => {
 it('should create resource', async () => {
     const data = {
         name: 'Test Resource',
-        description: 'Test description'
+        description: 'Test description',
     };
 
     const response = await apiClient.post('/api/resources', data);
-    
+
     expect(response.status).toBe(201);
     expect(response.body.data.id).toBeDefined();
     expect(response.body.data.name).toBe(data.name);
@@ -182,7 +182,7 @@ it('should require authentication', async () => {
     // Without token
     const response = await apiClient.get('/api/protected');
     expect(response.status).toBe(401);
-    
+
     // With token
     apiClient.setAuthToken('valid-token');
     const authResponse = await apiClient.get('/api/protected');
@@ -196,11 +196,11 @@ it('should require authentication', async () => {
 it('should validate input', async () => {
     const invalidData = {
         // Missing required field
-        description: 'test'
+        description: 'test',
     };
 
     const response = await apiClient.post('/api/resources', invalidData);
-    
+
     expect(response.status).toBe(400);
     expect(response.body.success).toBe(false);
     expect(response.body.message).toContain('required');
@@ -215,16 +215,13 @@ it('should validate input', async () => {
 import { jest } from '@jest/globals';
 
 jest.mock('../services/EmailService', () => ({
-    sendEmail: jest.fn().mockResolvedValue(true)
+    sendEmail: jest.fn().mockResolvedValue(true),
 }));
 
 it('should send email', async () => {
     const result = await notificationService.notify('user@example.com');
-    
-    expect(EmailService.sendEmail).toHaveBeenCalledWith(
-        'user@example.com',
-        expect.any(String)
-    );
+
+    expect(EmailService.sendEmail).toHaveBeenCalledWith('user@example.com', expect.any(String));
     expect(result).toBe(true);
 });
 ```
@@ -236,13 +233,13 @@ const mockRepository = {
     findById: jest.fn().mockResolvedValue({ id: '123', name: 'Test' }),
     create: jest.fn().mockResolvedValue({ id: '456', name: 'Created' }),
     update: jest.fn().mockResolvedValue({ id: '123', name: 'Updated' }),
-    delete: jest.fn().mockResolvedValue(true)
+    delete: jest.fn().mockResolvedValue(true),
 };
 
 it('should use mocked repository', async () => {
     const service = new MyService(mockRepository);
     const result = await service.getById('123');
-    
+
     expect(mockRepository.findById).toHaveBeenCalledWith('123');
     expect(result.id).toBe('123');
 });
@@ -253,11 +250,11 @@ it('should use mocked repository', async () => {
 ```typescript
 it('should call logger', () => {
     const loggerSpy = jest.spyOn(console, 'log');
-    
+
     functionThatLogs('test message');
-    
+
     expect(loggerSpy).toHaveBeenCalledWith('test message');
-    
+
     loggerSpy.mockRestore();
 });
 ```
@@ -278,37 +275,29 @@ describe('Middleware', () => {
         mockRequest = {
             body: {},
             params: {},
-            query: {}
+            query: {},
         };
         mockResponse = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn().mockReturnThis(),
-            send: jest.fn().mockReturnThis()
+            send: jest.fn().mockReturnThis(),
         };
         nextFunction = jest.fn();
     });
 
     it('should validate request', () => {
         mockRequest.body = { name: 'test' };
-        
-        validationMiddleware(
-            mockRequest as Request,
-            mockResponse as Response,
-            nextFunction
-        );
-        
+
+        validationMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
+
         expect(nextFunction).toHaveBeenCalled();
     });
 
     it('should return error for invalid request', () => {
         mockRequest.body = {}; // Missing required field
-        
-        validationMiddleware(
-            mockRequest as Request,
-            mockResponse as Response,
-            nextFunction
-        );
-        
+
+        validationMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
+
         expect(mockResponse.status).toHaveBeenCalledWith(400);
         expect(nextFunction).not.toHaveBeenCalled();
     });
@@ -321,17 +310,17 @@ describe('Middleware', () => {
 
 ```typescript
 it('should handle concurrent requests', async () => {
-    const requests = Array.from({ length: 10 }, (_, i) => 
+    const requests = Array.from({ length: 10 }, (_, i) =>
         apiClient.post('/api/resources', { name: `Resource ${i}` })
     );
-    
+
     const responses = await Promise.all(requests);
-    
+
     // All should succeed
     responses.forEach(response => {
         expect(response.status).toBe(201);
     });
-    
+
     // All should have unique IDs
     const ids = responses.map(r => r.body.data.id);
     const uniqueIds = new Set(ids);
@@ -344,9 +333,9 @@ it('should handle concurrent requests', async () => {
 ```typescript
 it('should complete within time limit', async () => {
     const startTime = Date.now();
-    
+
     await performOperation();
-    
+
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(1000); // 1 second
 });
@@ -366,7 +355,7 @@ it('should retry on failure', async () => {
     });
 
     const result = await retryableFunction(mockFn, { maxRetries: 3 });
-    
+
     expect(mockFn).toHaveBeenCalledTimes(3);
     expect(result).toBe('success');
 });
@@ -393,7 +382,7 @@ it('should match snapshot', () => {
     const data = {
         id: '123',
         name: 'Test',
-        createdAt: '2024-01-01'
+        createdAt: '2024-01-01',
     };
 
     expect(formatResponse(data)).toMatchSnapshot();
@@ -404,8 +393,8 @@ it('should match snapshot', () => {
 
 ```typescript
 // Equality
-expect(value).toBe(expected);          // === comparison
-expect(value).toEqual(expected);       // Deep equality
+expect(value).toBe(expected); // === comparison
+expect(value).toEqual(expected); // Deep equality
 expect(value).toStrictEqual(expected); // Strict deep equality
 
 // Truthiness

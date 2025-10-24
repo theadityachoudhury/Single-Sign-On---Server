@@ -41,6 +41,7 @@ Test results will appear in your terminal. Coverage reports are generated in the
 ### `jest.config.ts`
 
 Main Jest configuration file that defines:
+
 - Test environment (Node.js)
 - Module resolution and path mapping
 - Coverage thresholds and reporters
@@ -50,6 +51,7 @@ Main Jest configuration file that defines:
 ### `tsconfig.test.json`
 
 TypeScript configuration specifically for tests:
+
 - Extends base `tsconfig.json`
 - Includes test directories
 - Configures output for test compilation
@@ -57,6 +59,7 @@ TypeScript configuration specifically for tests:
 ### `tests/setup.ts`
 
 Global test setup file that runs before all tests:
+
 - Initializes MongoDB Memory Server
 - Sets test environment variables
 - Configures global cleanup hooks
@@ -65,6 +68,7 @@ Global test setup file that runs before all tests:
 ### `.env.test`
 
 Test-specific environment variables:
+
 - Safe default values for testing
 - No sensitive information
 - MongoDB URIs (overridden by Memory Server)
@@ -92,7 +96,7 @@ const count = await DatabaseTestUtils.getCollectionCount('clients');
 const email = MockDataGenerator.generateRandomEmail();
 const url = MockDataGenerator.generateRandomUrl();
 const client = MockDataGenerator.generateOAuthClient({
-    clientName: 'Custom Name'
+    clientName: 'Custom Name',
 });
 ```
 
@@ -131,6 +135,7 @@ HttpAssertions.expectNotFound(response);
 **Purpose:** Test individual functions in isolation
 
 **Template:**
+
 ```typescript
 import { describe, it, expect } from '@jest/globals';
 import { YourClass } from '@/path/to/class.js';
@@ -140,10 +145,10 @@ describe('YourClass', () => {
         it('should do something specific', () => {
             // Arrange
             const input = 'test';
-            
+
             // Act
             const result = YourClass.yourMethod(input);
-            
+
             // Assert
             expect(result).toBe('expected');
         });
@@ -158,6 +163,7 @@ describe('YourClass', () => {
 **Purpose:** Test component interactions with database
 
 **Template:**
+
 ```typescript
 import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
 import YourService from '@/apps/module/services/YourService.js';
@@ -179,7 +185,7 @@ describe('YourService - Integration Tests', () => {
     it('should create and persist data', async () => {
         const data = { name: 'test' };
         const result = await service.create(data);
-        
+
         expect(result.error).toBeFalsy();
         expect(result.data).toBeDefined();
     });
@@ -193,6 +199,7 @@ describe('YourService - Integration Tests', () => {
 **Purpose:** Test API endpoints
 
 **Template:**
+
 ```typescript
 import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
 import app from '@/app.js';
@@ -213,7 +220,7 @@ describe('API Endpoint Tests', () => {
     it('should create resource via API', async () => {
         const data = { name: 'test' };
         const response = await apiClient.post('/api/resource', data);
-        
+
         HttpAssertions.expectSuccess(response, 201);
         expect(response.body.data).toBeDefined();
     });
@@ -227,6 +234,7 @@ describe('API Endpoint Tests', () => {
 **Purpose:** Test complete workflows end-to-end
 
 **Template:**
+
 ```typescript
 import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
 import app from '@/app.js';
@@ -248,16 +256,16 @@ describe('Complete User Flow', () => {
         // Step 1: Create resource
         const createRes = await apiClient.post('/api/resource', data);
         expect(createRes.status).toBe(201);
-        
+
         // Step 2: Get resource
         const id = createRes.body.data.id;
         const getRes = await apiClient.get(`/api/resource/${id}`);
         expect(getRes.status).toBe(200);
-        
+
         // Step 3: Update resource
         const updateRes = await apiClient.put(`/api/resource/${id}`, updates);
         expect(updateRes.status).toBe(200);
-        
+
         // Step 4: Delete resource
         const deleteRes = await apiClient.delete(`/api/resource/${id}`);
         expect(deleteRes.status).toBe(204);
@@ -299,12 +307,10 @@ it('should complete within time limit', async () => {
 
 ```typescript
 it('should handle concurrent requests', async () => {
-    const requests = Array.from({ length: 10 }, () => 
-        apiClient.post('/api/endpoint', data)
-    );
-    
+    const requests = Array.from({ length: 10 }, () => apiClient.post('/api/endpoint', data));
+
     const responses = await Promise.all(requests);
-    
+
     responses.forEach(response => {
         expect(response.status).toBe(201);
     });
@@ -341,11 +347,7 @@ Add to `.vscode/launch.json`:
     "request": "launch",
     "name": "Jest Debug",
     "program": "${workspaceFolder}/node_modules/.bin/jest",
-    "args": [
-        "--runInBand",
-        "--no-cache",
-        "${fileBasename}"
-    ],
+    "args": ["--runInBand", "--no-cache", "${fileBasename}"],
     "console": "integratedTerminal",
     "internalConsoleOptions": "neverOpen"
 }
@@ -354,6 +356,7 @@ Add to `.vscode/launch.json`:
 ## Continuous Integration
 
 Tests run automatically on:
+
 - Every push to main/develop branches
 - Every pull request
 - Manual workflow dispatch
@@ -365,6 +368,7 @@ See `.github/workflows/ci-tests.yml` for CI configuration.
 ### Issue: Tests timeout
 
 **Solution:**
+
 ```typescript
 // Increase timeout for specific test
 it('slow test', async () => {
@@ -372,12 +376,13 @@ it('slow test', async () => {
 }, 60000); // 60 second timeout
 
 // Or in jest.config.ts
-testTimeout: 30000
+testTimeout: 30000;
 ```
 
 ### Issue: Module not found errors
 
 **Solution:**
+
 - Check path aliases in `jest.config.ts`
 - Ensure `.js` extension in imports
 - Verify `moduleNameMapper` configuration
@@ -385,6 +390,7 @@ testTimeout: 30000
 ### Issue: MongoDB Memory Server fails
 
 **Solution:**
+
 ```bash
 # Clear cache
 rm -rf ~/.cache/mongodb-memory-server
@@ -396,6 +402,7 @@ npm install mongodb-memory-server --save-dev
 ### Issue: Coverage below threshold
 
 **Solution:**
+
 - Add more test cases
 - Test edge cases and error paths
 - Review uncovered lines in coverage report

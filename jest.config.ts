@@ -4,15 +4,19 @@ const config: Config = {
     preset: 'ts-jest/presets/default-esm',
     testEnvironment: 'node',
     extensionsToTreatAsEsm: ['.ts'],
+    // Explicitly include TS and JS extensions for module resolution
+    // Use ts-jest resolver to properly resolve TS path aliases and .js-suffixed imports in ESM
+    resolver: 'ts-jest-resolver',
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'json', 'node'],
     moduleNameMapper: {
-        '^@/Logger/(.*)$': '<rootDir>/src/core/Logger/$1',
-        '^@/apps/(.*)$': '<rootDir>/src/apps/$1',
-        '^@/Config/(.*)$': '<rootDir>/src/core/Config/$1',
-        '^@/types/OAuth/(.*)$': '<rootDir>/src/apps/oauth/types/$1',
-        '^@/utils/(.*)$': '<rootDir>/src/Utils/$1',
-        '^@/core/(.*)$': '<rootDir>/src/core/$1',
-        '^@/Utils/(.*)$': '<rootDir>/src/Utils/$1',
-        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@/Logger/(.*)(?:\\.js)?$': '<rootDir>/src/core/Logger/$1',
+        '^@/apps/(.*)(?:\\.js)?$': '<rootDir>/src/apps/$1',
+        '^@/Config/(.*)(?:\\.js)?$': '<rootDir>/src/core/Config/$1',
+        '^@/types/OAuth/(.*)(?:\\.js)?$': '<rootDir>/src/apps/oauth/types/$1',
+        '^@/utils/(.*)(?:\\.js)?$': '<rootDir>/src/Utils/$1',
+        '^@/core/(.*)(?:\\.js)?$': '<rootDir>/src/core/$1',
+        '^@/Utils/(.*)(?:\\.js)?$': '<rootDir>/src/Utils/$1',
+        '^@/(.*)(?:\\.js)?$': '<rootDir>/src/$1',
         '^(\\.{1,2}/.*)\\.js$': '$1',
     },
     transform: {
@@ -20,10 +24,7 @@ const config: Config = {
             'ts-jest',
             {
                 useESM: true,
-                tsconfig: {
-                    module: 'ESNext',
-                    moduleResolution: 'node',
-                },
+                tsconfig: '<rootDir>/tsconfig.test.json',
             },
         ],
     },

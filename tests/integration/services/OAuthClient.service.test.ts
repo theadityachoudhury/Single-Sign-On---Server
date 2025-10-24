@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
-import OAuthClientService from '@/apps/oauth/services/OAuthClient.service.js';
-import { ClientType } from '@/types/OAuth/OAuthClients.type.js';
-import initializeDatabase from '@/core/DB/index.js';
+import OAuthClientService from '../../../src/apps/oauth/services/OAuthClient.service.js';
+import { ClientType, ApplicationType } from '../../../src/apps/oauth/types/OAuthClients.type.js';
+import initializeDatabase from '../../../src/core/DB/index.js';
 import { DatabaseTestUtils } from '../../utils/test-helpers.js';
 
 describe('OAuthClientService - Integration Tests', () => {
@@ -23,7 +23,12 @@ describe('OAuthClientService - Integration Tests', () => {
             const clientData = {
                 clientName: 'Test Confidential Client',
                 clientType: ClientType.CONFIDENTIAL,
-                description: 'Test confidential client for integration tests',
+                applicationType: ApplicationType.WEB,
+                clientDescription: 'Test confidential client for integration tests',
+                clientSecretHash: 'placeholder',
+                accessTokenLifetime: 3600,
+                refreshTokenLifetime: 1209600,
+                idTokenLifetime: 120,
             };
 
             const result = await oauthClientService.createClient(clientData);
@@ -41,7 +46,12 @@ describe('OAuthClientService - Integration Tests', () => {
             const clientData = {
                 clientName: 'Test Public Client',
                 clientType: ClientType.PUBLIC,
-                description: 'Test public client for integration tests',
+                applicationType: ApplicationType.WEB,
+                clientDescription: 'Test public client for integration tests',
+                clientSecretHash: 'placeholder',
+                accessTokenLifetime: 3600,
+                refreshTokenLifetime: 1209600,
+                idTokenLifetime: 120,
             };
 
             const result = await oauthClientService.createClient(clientData);
@@ -57,13 +67,23 @@ describe('OAuthClientService - Integration Tests', () => {
             const client1Data = {
                 clientName: 'Client 1',
                 clientType: ClientType.CONFIDENTIAL,
-                description: 'First test client',
+                applicationType: ApplicationType.WEB,
+                clientDescription: 'First test client',
+                clientSecretHash: 'placeholder',
+                accessTokenLifetime: 3600,
+                refreshTokenLifetime: 1209600,
+                idTokenLifetime: 120,
             };
 
             const client2Data = {
                 clientName: 'Client 2',
                 clientType: ClientType.CONFIDENTIAL,
-                description: 'Second test client',
+                applicationType: ApplicationType.WEB,
+                clientDescription: 'Second test client',
+                clientSecretHash: 'placeholder',
+                accessTokenLifetime: 3600,
+                refreshTokenLifetime: 1209600,
+                idTokenLifetime: 120,
             };
 
             const result1 = await oauthClientService.createClient(client1Data);
@@ -78,7 +98,12 @@ describe('OAuthClientService - Integration Tests', () => {
             const clientData = {
                 clientName: 'Test Client',
                 clientType: ClientType.CONFIDENTIAL,
-                description: 'Test client',
+                applicationType: ApplicationType.WEB,
+                clientDescription: 'Test client',
+                clientSecretHash: 'placeholder',
+                accessTokenLifetime: 3600,
+                refreshTokenLifetime: 1209600,
+                idTokenLifetime: 120,
             };
 
             const result1 = await oauthClientService.createClient(clientData);
@@ -93,7 +118,12 @@ describe('OAuthClientService - Integration Tests', () => {
             const clientData = {
                 clientName: 'Test Confidential Client',
                 clientType: ClientType.CONFIDENTIAL,
-                description: 'Test client for grants',
+                applicationType: ApplicationType.WEB,
+                clientDescription: 'Test client for grants',
+                clientSecretHash: 'placeholder',
+                accessTokenLifetime: 3600,
+                refreshTokenLifetime: 1209600,
+                idTokenLifetime: 120,
             };
 
             const result = await oauthClientService.createClient(clientData);

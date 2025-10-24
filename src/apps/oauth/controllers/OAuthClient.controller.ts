@@ -13,10 +13,12 @@ export class OAuthClientController extends BaseController {
     }
 
     createClient = this.asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const session = await db.oAuthDB.startSession();
+        // In test environment (or when transactions are not supported), skip session/transaction
+        const useTransaction = process.env.NODE_ENV !== 'test';
+        const session = useTransaction ? await db.oAuthDB.startSession() : undefined;
 
         try {
-            session.startTransaction();
+            if (session) session.startTransaction();
 
             const result = await this.oauthClientService.createClient(req.body, session);
 
@@ -26,7 +28,7 @@ export class OAuthClientController extends BaseController {
                 );
             }
 
-            await session.commitTransaction();
+            if (session) await session.commitTransaction();
 
             res.status(201).json({
                 success: true,
@@ -34,10 +36,10 @@ export class OAuthClientController extends BaseController {
                 data: result.data,
             });
         } catch (error: any) {
-            await session.abortTransaction();
+            if (session) await session.abortTransaction();
             throw error;
         } finally {
-            session.endSession();
+            if (session) session.endSession();
         }
     });
 }

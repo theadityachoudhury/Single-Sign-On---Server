@@ -35,6 +35,7 @@ tests/
 ## Running Tests
 
 ### Run All Tests
+
 ```bash
 npm test
 ```
@@ -56,11 +57,13 @@ npm run test:system
 ```
 
 ### Watch Mode
+
 ```bash
 npm run test:watch
 ```
 
 ### Coverage Reports
+
 ```bash
 # Generate coverage report
 npm run test:coverage
@@ -70,6 +73,7 @@ npm run test:coverage:report
 ```
 
 ### CI Mode
+
 ```bash
 # Run tests in CI environment
 npm run test:ci
@@ -82,12 +86,14 @@ npm run test:ci
 **Purpose:** Test individual functions, classes, or modules in isolation.
 
 **Characteristics:**
+
 - Fast execution
 - No external dependencies
 - Mock all dependencies
 - Focus on single responsibility
 
 **Example:**
+
 ```typescript
 describe('SecretUtils', () => {
     it('should generate a random secret', () => {
@@ -103,12 +109,14 @@ describe('SecretUtils', () => {
 **Purpose:** Test interactions between multiple components (e.g., services + repositories + database).
 
 **Characteristics:**
+
 - Use real database (MongoDB Memory Server)
 - Test component interactions
 - Verify data persistence
 - Moderate execution speed
 
 **Example:**
+
 ```typescript
 describe('OAuthClientService', () => {
     it('should create client and persist to database', async () => {
@@ -124,12 +132,14 @@ describe('OAuthClientService', () => {
 **Purpose:** Test API endpoints and their responses.
 
 **Characteristics:**
+
 - Test HTTP requests/responses
 - Verify API contracts
 - Test validation and error handling
 - Use Supertest
 
 **Example:**
+
 ```typescript
 describe('POST /api/oauth/clients', () => {
     it('should create OAuth client via API', async () => {
@@ -145,12 +155,14 @@ describe('POST /api/oauth/clients', () => {
 **Purpose:** Test complete end-to-end workflows and system behavior.
 
 **Characteristics:**
+
 - Test full user journeys
 - Verify system-wide behavior
 - Test performance and load
 - Test error recovery
 
 **Example:**
+
 ```typescript
 describe('Complete OAuth Flow', () => {
     it('should complete full client registration lifecycle', async () => {
@@ -236,20 +248,23 @@ HttpAssertions.expectError(response, 400);
 ## Best Practices
 
 ### 1. Test Independence
+
 - Each test should be independent
 - Tests should not rely on execution order
 - Clean up data after each test
 
 ### 2. Descriptive Test Names
+
 ```typescript
 // ✅ Good
-it('should return 400 when client name is missing')
+it('should return 400 when client name is missing');
 
 // ❌ Bad
-it('test client creation')
+it('test client creation');
 ```
 
 ### 3. Arrange-Act-Assert Pattern
+
 ```typescript
 it('should hash secret correctly', async () => {
     // Arrange
@@ -264,6 +279,7 @@ it('should hash secret correctly', async () => {
 ```
 
 ### 4. Test Edge Cases
+
 - Empty inputs
 - Null/undefined values
 - Very large inputs
@@ -271,13 +287,15 @@ it('should hash secret correctly', async () => {
 - Error conditions
 
 ### 5. Mock External Dependencies
+
 ```typescript
 jest.mock('@/external-service', () => ({
-    sendEmail: jest.fn().mockResolvedValue(true)
+    sendEmail: jest.fn().mockResolvedValue(true),
 }));
 ```
 
 ### 6. Use Test Data Builders
+
 ```typescript
 const clientData = MockDataGenerator.generateOAuthClient({
     clientName: 'Custom Name',
@@ -295,6 +313,7 @@ The project maintains the following coverage thresholds:
 - **Statements:** 70%
 
 View coverage report after running:
+
 ```bash
 npm run test:coverage
 ```
@@ -309,35 +328,39 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run test:ci
-      - uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage/coverage-final.json
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '20'
+            - run: npm ci
+            - run: npm run test:ci
+            - uses: codecov/codecov-action@v3
+              with:
+                  files: ./coverage/coverage-final.json
 ```
 
 ## Troubleshooting
 
 ### Tests Timeout
+
 - Increase timeout in specific test: `it('test', async () => {...}, 60000)`
 - Increase global timeout in `jest.config.ts`
 
 ### Database Connection Issues
+
 - Ensure MongoDB Memory Server is properly initialized
 - Check `tests/setup.ts` configuration
 
 ### Module Resolution Issues
+
 - Verify path aliases in `jest.config.ts` match `tsconfig.json`
 - Check that `ts-jest` is configured with ESM support
 
 ### Memory Issues
+
 - Reduce `maxWorkers` in jest config
 - Clear database more frequently
 - Close connections properly in `afterAll`
@@ -352,6 +375,7 @@ jobs:
 ## Contributing
 
 When adding new features:
+
 1. Write tests first (TDD approach recommended)
 2. Ensure all tests pass: `npm test`
 3. Meet coverage requirements: `npm run test:coverage`

@@ -43,10 +43,10 @@ describe('Feature Name', () => {
     it('should do something', async () => {
         // Arrange
         const input = 'test';
-        
+
         // Act
         const result = await doSomething(input);
-        
+
         // Assert
         expect(result).toBeDefined();
     });
@@ -57,33 +57,33 @@ describe('Feature Name', () => {
 
 ```typescript
 // Equality
-expect(value).toBe(expected)
-expect(value).toEqual(expected)
+expect(value).toBe(expected);
+expect(value).toEqual(expected);
 
 // Truthiness
-expect(value).toBeTruthy()
-expect(value).toBeFalsy()
-expect(value).toBeDefined()
+expect(value).toBeTruthy();
+expect(value).toBeFalsy();
+expect(value).toBeDefined();
 
 // Numbers
-expect(value).toBeGreaterThan(5)
-expect(value).toBeLessThan(10)
+expect(value).toBeGreaterThan(5);
+expect(value).toBeLessThan(10);
 
 // Strings
-expect(string).toContain('text')
-expect(string).toMatch(/regex/)
+expect(string).toContain('text');
+expect(string).toMatch(/regex/);
 
 // Arrays
-expect(array).toHaveLength(5)
-expect(array).toContain(item)
+expect(array).toHaveLength(5);
+expect(array).toContain(item);
 
 // Functions
-expect(fn).toHaveBeenCalled()
-expect(fn).toHaveBeenCalledWith(arg)
+expect(fn).toHaveBeenCalled();
+expect(fn).toHaveBeenCalledWith(arg);
 
 // Async
-await expect(promise).resolves.toBe(value)
-await expect(promise).rejects.toThrow()
+await expect(promise).resolves.toBe(value);
+await expect(promise).rejects.toThrow();
 ```
 
 ## 🛠️ Test Utilities
@@ -108,7 +108,7 @@ HttpAssertions.expectSuccess(response, 201);
 ## 📊 Coverage Thresholds
 
 | Metric     | Minimum |
-|------------|---------|
+| ---------- | ------- |
 | Branches   | 70%     |
 | Functions  | 70%     |
 | Lines      | 70%     |
@@ -133,6 +133,7 @@ npm test -- --verbose
 ## 📝 Best Practices
 
 ✅ **DO:**
+
 - Test behavior, not implementation
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
@@ -141,6 +142,7 @@ npm test -- --verbose
 - Keep tests fast (< 1s per test)
 
 ❌ **DON'T:**
+
 - Test implementation details
 - Make tests depend on each other
 - Use hardcoded IDs or timestamps
@@ -156,12 +158,12 @@ npm test -- --verbose
 
 ## 📈 Test Types
 
-| Type | Purpose | Example |
-|------|---------|---------|
-| **Unit** | Individual functions | Hash function |
-| **Integration** | Multiple components | Service + DB |
-| **Functional** | API endpoints | POST /api/client |
-| **System** | Complete workflows | Full registration |
+| Type            | Purpose              | Example           |
+| --------------- | -------------------- | ----------------- |
+| **Unit**        | Individual functions | Hash function     |
+| **Integration** | Multiple components  | Service + DB      |
+| **Functional**  | API endpoints        | POST /api/client  |
+| **System**      | Complete workflows   | Full registration |
 
 ## 🎨 File Naming
 
@@ -183,17 +185,20 @@ FlowName.system.test.ts    # System test
 ## 🚨 Common Issues
 
 **Tests timeout?**
+
 ```typescript
 it('test', async () => { ... }, 60000); // 60s timeout
 ```
 
 **Module not found?**
+
 ```typescript
 // Use relative paths
 import Util from '../../../src/Utils/Util.js';
 ```
 
 **DB connection issues?**
+
 ```bash
 rm -rf ~/.cache/mongodb-memory-server
 npm install mongodb-memory-server --save-dev
