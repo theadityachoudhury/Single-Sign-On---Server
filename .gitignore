@@ -3,12 +3,16 @@ node_modules/
 
 # Build output
 dist/
+dist-test/
 logs/
 
 # Environment files
 .env
 .env.local
 .env.*.local
+
+# Keep .env.test as it contains safe test values
+!.env.test
 
 # OS files
 .DS_Store
@@ -21,5 +25,10 @@ Thumbs.db
 # Logs
 *.log
 
-# Optional: coverage
+# Test coverage and reports
 coverage/
+.nyc_output/
+*.lcov
+
+# Jest cache
+.jest/
