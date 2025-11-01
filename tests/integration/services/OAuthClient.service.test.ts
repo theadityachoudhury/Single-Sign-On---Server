@@ -1,16 +1,29 @@
-import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
-import OAuthClientService from '../../../src/apps/oauth/services/OAuthClient.service.js';
-import { ClientType, ApplicationType } from '../../../src/apps/oauth/types/OAuthClients.type.js';
-import initializeDatabase from '../../../src/core/DB/index.js';
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from '@jest/globals';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { DatabaseTestUtils } from '../../utils/test-helpers.js';
+import { ClientType, ApplicationType } from '../../../src/apps/oauth/types/OAuthClients.type.js';
+import OAuthClientService from '../../../src/apps/oauth/services/OAuthClient.service.js';
 
 describe('OAuthClientService - Integration Tests', () => {
     let oauthClientService: OAuthClientService;
+    let replSet: MongoMemoryReplSet;
 
     beforeAll(async () => {
-        // Initialize database connection
+        // Start a dedicated in-memory replica set and set env BEFORE importing code that reads env
+        replSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+        process.env.NODE_ENV = 'test';
+        process.env.AUTH_DB_MONGO_URI = replSet.getUri('auth-test');
+        process.env.OAUTH_DB_MONGO_URI = replSet.getUri('oauth-test');
+        process.env.IDENTITY_DB_MONGO_URI = replSet.getUri('identity-test');
+
+        // Dynamically import after env is set so connections pick up correct URIs
+        const { default: initializeDatabase } = await import('../../../src/core/DB/index.js');
+        const { default: Service } = await import(
+            '../../../src/apps/oauth/services/OAuthClient.service.js'
+        );
+
         await initializeDatabase();
-        oauthClientService = new OAuthClientService();
+        oauthClientService = new Service();
     });
 
     beforeEach(async () => {
@@ -133,5 +146,11 @@ describe('OAuthClientService - Integration Tests', () => {
             // Verify the client was created successfully
             // In a full test, you would query the grants and verify they were assigned
         });
+    });
+
+    afterAll(async () => {
+        if (replSet) {
+            await replSet.stop();
+        }
     });
 });
