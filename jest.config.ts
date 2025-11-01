@@ -53,6 +53,8 @@ const config: Config = {
         },
     },
     setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+    globalSetup: '<rootDir>/tests/global-setup.mjs',
+    globalTeardown: '<rootDir>/tests/global-teardown.mjs',
     testTimeout: 30000,
     maxWorkers: '50%',
     verbose: true,
