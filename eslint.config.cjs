@@ -33,7 +33,7 @@ module.exports = [
                 clearImmediate: 'readonly',
             },
             parserOptions: {
-                project: './tsconfig.json',
+                project: ['./tsconfig.json', './tsconfig.test.json'],
             },
         },
         rules: {
@@ -61,6 +61,7 @@ module.exports = [
         ignores: [
             'node_modules',
             'dist',
+            'dist-test',
             'build',
             'coverage',
             'out',
